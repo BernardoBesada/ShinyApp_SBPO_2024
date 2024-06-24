@@ -21,14 +21,14 @@ ui <- tagList(
     tabPanel("Results",
         conditionalPanel(condition = "input.use_research_data == 'Yes'",
             fluidRow(
-                column(6,
+                column(4,
                     wellPanel(
                         tableOutput('research_weights'),
                     )
                 ),
-                column(6,
+                column(8,
                     wellPanel(
-                        tableOutput('research_weights'),
+                        leafletOutput('research_plot'),
                     )
                 ),
             )
@@ -108,6 +108,9 @@ server <- function(input,output,session){
         options = list(paging =TRUE, pageLength =  5)
     )
 
+    output$research_plot <- renderLeaflet(
+        m,
+    )
 
     output$missing_file <- renderText("No file uploaded.\nGo to the data section and upload a file or choose to use research data.")
 
