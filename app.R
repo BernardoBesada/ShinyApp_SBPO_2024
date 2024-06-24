@@ -109,7 +109,7 @@ server <- function(input,output,session){
     )
 
     output$research_plot <- renderLeaflet(
-        m,
+        create_map(data_research, data_scores),
     )
 
     output$missing_file <- renderText("No file uploaded.\nGo to the data section and upload a file or choose to use research data.")
