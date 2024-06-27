@@ -43,6 +43,7 @@ ui <- tagList(
                 fluidRow(
                     column(4,
                         wellPanel(
+                            downloadButton('download_results', 'Download results'),
                             tableOutput('input_weights'),
                         )
                     ),
@@ -215,6 +216,24 @@ server <- function(input,output,session){
         m <- create_map(input_data, scores, shp_, input$places_id)
         return(m)
     }
+    )
+
+    df_results <- reactive({
+        input_results <- results_()
+        scores <- input_results$Scores
+        input_data <- data_()
+        out_dt <- data.frame(Names = input_data[, input$places_names], Ids = input_data[, input$places_id], Scores = scores)
+        colnames(out_dt) <- c(input$places_names, input$places_id, "Scores")
+        return(out_dt)
+    })
+
+    output$download_results <- downloadHandler(
+        filename = function(){
+            "scores.csv"
+        }, 
+        content = function(fname){
+            return(write.csv(df_results(), fname))
+        }
     )
 
     observe({

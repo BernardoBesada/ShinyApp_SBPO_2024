@@ -11,7 +11,7 @@ create_map_research <- function(data_research, data_scores){
 
     #making sure both are in the same order
     cd_muns <- as.integer(as.data.frame(sp)[, "CD_MUN"])
-    cd_muns_or <- data_research[, "CD_MUN"]
+    cd_muns_or <- data_research[, "Code"]
     value_order <- c()
     for(val in 1:length(cd_muns)){
         value_order <- c(value_order, which(cd_muns[val] == cd_muns_or)[[1]])
