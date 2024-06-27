@@ -1,10 +1,11 @@
 library(ggplot2)
 library(leaflet)
+library(htmltools)
 library(sf)
 
 #reading shapefile
-
 create_map_research <- function(data_research, data_scores){
+
     sp <- read_sf("www/RN_Municipios_2021.shp")
 
     bounding_box <- st_bbox(sp)
@@ -16,6 +17,12 @@ create_map_research <- function(data_research, data_scores){
     for(val in 1:length(cd_muns)){
         value_order <- c(value_order, which(cd_muns[val] == cd_muns_or)[[1]])
     }
+
+    label_txt <- paste(
+        "Alternative: ", data_research[, "Municipality"][value_order], "<br/>",
+        "Score: ", data_scores[value_order], "<br/>",
+        sep = ""
+    ) %>% lapply(htmltools::HTML)
 
 
     #setting pallete
@@ -29,7 +36,18 @@ create_map_research <- function(data_research, data_scores){
     #plotting map
     m <- leaflet(sp) %>%
         addTiles() %>%
-        addPolygons(fillColor = ~ mypalette(data_scores[value_order]), stroke = FALSE, fillOpacity = 0.8)%>%
+        addPolygons(fillColor = ~ mypalette(data_scores[value_order]), stroke = TRUE, weight = 0.5, fillOpacity = 0.8,
+                    label = label_txt,
+                    highlightOptions = highlightOptions(
+                        weight = 5,
+                        color = "#666",
+                        fillOpacity = 1,
+                        bringToFront = TRUE),
+                    labelOptions = labelOptions(
+                        style = list("font-weight" = "normal", padding = "3px 8px"),
+                        textsize= "15px",
+                        direction = "auto"
+                    ))%>%
         fitBounds(lng1 = bounding_box[["xmax"]],
                     lat1 = bounding_box[["ymax"]],
                     lng2 = bounding_box[["xmin"]],
@@ -42,7 +60,7 @@ create_map_research <- function(data_research, data_scores){
     return(m)
 }
 
-create_map <- function(input_data, scores, sf_shapefile, id_name){
+create_map <- function(input_data, scores, sf_shapefile, id_name, name_name){
     bounding_box <- st_bbox(sf_shapefile)
 
     #making sure both are in the same order
@@ -53,19 +71,35 @@ create_map <- function(input_data, scores, sf_shapefile, id_name){
         value_order <- c(value_order, which(cd[val] == cd_or)[[1]])
     }
 
-
     #setting pallete
     mypalette <- colorNumeric(
         palette = "RdBu", domain = scores,
         na.color = "transparent"
     )
 
+    label_txt <- paste(
+        "Alternative: ", input_data[, name_name][value_order], "<br/>",
+        "Score: ", scores[value_order], "<br/>",
+        sep = ""
+    ) %>% lapply(htmltools::HTML)
+
     xmid <- (bounding_box[["xmax"]]-abs(bounding_box[["xmin"]]))/2
     ymid <- ( bounding_box[["ymax"]]-abs(bounding_box[["ymin"]]))/2
     #plotting map
     m <- leaflet(sf_shapefile) %>%
         addTiles() %>%
-        addPolygons(fillColor = ~ mypalette(scores[value_order]), stroke = FALSE, fillOpacity = 0.8)%>%
+        addPolygons(fillColor = ~ mypalette(scores[value_order]), stroke = TRUE, weight = 0.5, fillOpacity = 0.8,
+                    label = label_txt,
+                    highlightOptions = highlightOptions(
+                        weight = 5,
+                        color = "#666",
+                        fillOpacity = 1,
+                        bringToFront = TRUE),
+                    labelOptions = labelOptions(
+                        style = list("font-weight" = "normal", padding = "3px 8px"),
+                        textsize= "15px",
+                        direction = "auto"
+                    ))%>%
         fitBounds(lng1 = bounding_box[["xmax"]],
                     lat1 = bounding_box[["ymax"]],
                     lng2 = bounding_box[["xmin"]],

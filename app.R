@@ -18,7 +18,7 @@ ui <- tagList(
     useShinyjs(),
     navbarPage(
 
-    "Page title",
+    "An Objective Site Selection Framework for Wind Farms from a Sustainable Development Standpoint",
 
     tabPanel("Results",
         conditionalPanel(condition = "input.use_research_data == 'Yes'",
@@ -76,7 +76,7 @@ ui <- tagList(
                     wellPanel(
                         disabled(checkboxGroupInput(
                             "locked_costs",
-                            "Select the ones that are cost-type attributes:",
+                            "Select the ones that are cost-type criteria:",
                             choices = data_cols[data_numeric],
                             selected = data_cols[data_numeric][data_norm],
                         )
@@ -125,7 +125,8 @@ ui <- tagList(
                 DTOutput("table_upload"),
             )
         ),
-    ))
+    tags$style(HTML(".navbar-header { width:100% }
+                   .navbar-brand { width: 100%; text-align: center }"))))
 )
 
 
@@ -213,7 +214,7 @@ server <- function(input,output,session){
         input_results <- results_()
         scores <- input_results$Scores
         input_data <- data_()
-        m <- create_map(input_data, scores, shp_, input$places_id)
+        m <- create_map(input_data, scores, shp_, input$places_id, input$places_names)
         return(m)
     }
     )
