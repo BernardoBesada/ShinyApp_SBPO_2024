@@ -48,5 +48,5 @@ calculate_scores <- function(num_values, normalization){
     weights <- MABAC(num_values)
     scores <- CRITIC(num_values, weights)
 
-    return(list("Scores" = scores, "Weights" = weights))
+    return(list("Criteria" = colnames(num_values), "Scores" = scores, "Weights" = weights))
 }

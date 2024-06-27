@@ -1,6 +1,7 @@
 library(shiny)
 library(shinyjs)
 library(DT)
+library(purrr)
 source("methods.R")
 source("plots.R")
 
@@ -9,6 +10,7 @@ data_cols <- colnames(data_research)
 data_numeric <- !data_cols %in% c("Municipality", "Code")
 data_norm <- c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 data_results <- calculate_scores(data_research[, data_numeric], data_norm)
+data_criteria <- data_results$Criteria
 data_weights <- data_results$Weights
 data_scores <- data_results$Scores
 
@@ -36,6 +38,22 @@ ui <- tagList(
         conditionalPanel(condition = "input.use_research_data == 'No'",
             conditionalPanel(condition = "output.file_not_uploaded",
                 textOutput("missing_file"),
+            ),
+            conditionalPanel(condition = "output.file_uploaded",
+                fluidRow(
+                    column(4,
+                        wellPanel(
+                            tableOutput('input_weights'),
+                        )
+                    ),
+                    column(8,
+                        conditionalPanel(condition = "output.shp_uploaded",
+                            wellPanel(
+                                leafletOutput('input_plot'),
+                            )
+                        )
+                    )
+                ),
             )
         ),
     ),
@@ -67,7 +85,24 @@ ui <- tagList(
             DTOutput("table_research")
         ),
         conditionalPanel(condition = "input.use_research_data == 'No'",
-            fileInput("file_input", "Upload CSV", accept = "text/csv"),
+            fluidRow(
+                column(4,
+                    wellPanel(
+                        fileInput("file_input", "Upload CSV", accept = "text/csv"),
+                    )
+                ),
+                column(4,
+                    wellPanel(
+                        radioButtons("plot_map", "Upload shapefile?",
+                            choices = list("Yes", "No"),
+                            selected = "No"
+                        ),
+                        conditionalPanel(condition = "input.plot_map == 'Yes'",
+                            fileInput("shp_input", "Upload SHP", accept = c(".cpg", ".dbf", ".prj", ".shp", ".shx"), multiple = TRUE),
+                        )
+                    ),
+                ),
+            ),
             conditionalPanel(condition = "output.file_uploaded",
                 fluidRow(
                     column(4,
@@ -89,8 +124,8 @@ ui <- tagList(
                 DTOutput("table_upload"),
             )
         ),
-    )
-))
+    ))
+)
 
 
 server <- function(input,output,session){
@@ -102,36 +137,85 @@ server <- function(input,output,session){
 
     output$research_weights <- renderTable(
         data.frame(
-            Criteria = data_cols[data_numeric],
+            Criteria = data_criteria,
             Weights = unname(data_weights)
         ),
         options = list(paging =TRUE, pageLength =  5)
     )
 
     output$research_plot <- renderLeaflet(
-        create_map(data_research, data_scores),
+        create_map_research(data_research, data_scores),
     )
 
     output$missing_file <- renderText("No file uploaded.\nGo to the data section and upload a file or choose to use research data.")
 
     output$file_uploaded <- reactive({
-      val <- !(is.null(input$file_input))
+        val <- !(is.null(input$file_input))
     })
     outputOptions(output, 'file_uploaded', suspendWhenHidden = FALSE)
 
     output$file_not_uploaded <- reactive({
-      val <- is.null(input$file_input)
+        val <- is.null(input$file_input)
     })
     outputOptions(output, 'file_not_uploaded', suspendWhenHidden = FALSE)
 
+    output$shp_uploaded <- reactive({
+        val <- !is.null(input$shp_input)
+    })
+    outputOptions(output, 'shp_uploaded', suspendWhenHidden = FALSE)
+
     data_ <- reactive({
         req(input$file_input)
-        read.csv(input$file_input$datapath, check.names = FALSE)
+        return(read.csv(input$file_input$datapath, check.names = FALSE))
+    })
+
+    results_ <- reactive({
+        data_input <- data_()
+        data_cols <- colnames(data_input)
+        data_numeric <- !data_cols %in% c(input$places_names, input$places_id)
+        data_norm_inputs <- data_cols[data_numeric] %in% as.vector(input$input_costs)
+        data_results <- calculate_scores(data_input[, data_numeric], data_norm_inputs)
+        return(data_results)
     })
 
     output$table_upload <- renderDataTable({
         data_()},
         options = list(paging =TRUE, pageLength =  5)
+    )
+
+    output$input_weights <- renderTable({
+        data_results <- results_()
+        data_weights <- data_results$Weights
+        data_criteria <- data_results$Criteria
+
+        data.frame(
+            Criteria = data_criteria,
+            Weights = unname(data_weights)
+        )
+        },
+        options = list(paging =TRUE, pageLength =  5)
+    )
+
+    read_shapefile <- function(shp_path) {
+        infiles <- shp_path$datapath # get the location of files
+        dir <- unique(dirname(infiles)) # get the directory
+        outfiles <- file.path(dir, shp_path$name) # create new path name
+        name <- strsplit(shp_path$name[1], "\\.")[[1]][1] # strip name 
+        purrr::walk2(infiles, outfiles, ~file.rename(.x, .y)) # rename files
+        x <- read_sf(file.path(dir, paste0(name, ".shp"))) # read-in shapefile
+        return(x)
+    }
+
+    output$input_plot <- renderLeaflet({
+        req(input$shp_input)
+        shp_ <- read_shapefile(input$shp_input)
+        input_results <- results_()
+        scores <- input_results$Scores
+        input_data <- data_()
+        print(input$places_id)
+        m <- create_map(input_data, scores, shp_, input$places_id)
+        return(m)
+    }
     )
 
     observe({
