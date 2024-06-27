@@ -52,7 +52,6 @@ create_map <- function(input_data, scores, sf_shapefile, id_name){
     for(val in 1:length(cd)){
         value_order <- c(value_order, which(cd[val] == cd_or)[[1]])
     }
-    print("here")
 
 
     #setting pallete

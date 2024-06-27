@@ -212,7 +212,6 @@ server <- function(input,output,session){
         input_results <- results_()
         scores <- input_results$Scores
         input_data <- data_()
-        print(input$places_id)
         m <- create_map(input_data, scores, shp_, input$places_id)
         return(m)
     }

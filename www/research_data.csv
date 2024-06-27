@@ -1,4 +1,4 @@
-﻿Municipality,CD_MUN,Porcentage of population living with at most 1/2 minimum wage (%),Employed population (%),Natural forests (%),Households with access to electric energy (%),Planted or destined to harvest area (%),Maximum capcacity of reservoirs (m^3),Nature conservation unit demarcated area(%),Average wind (m/s)
+﻿Municipality,Code,Porcentage of population living with at most 1/2 minimum wage (%),Employed population (%),Natural forests (%),Households with access to electric energy (%),Planted or destined to harvest area (%),Maximum capcacity of reservoirs (m^3),Nature conservation unit demarcated area(%),Average wind (m/s)
 Acari,2400109,0.435,0.1162,0.3,0.991,0.003,44421480,0.00253,9.755276887
 Açu,2400208,0.447,0.1303,0.477,0.975,0.017,2450423644,0.00168,9.82959017
 Afonso Bezerra,2400307,0.515,0.1137,0.429,0.97,0.017,16018308,0,9.613601625
