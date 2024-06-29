@@ -2,6 +2,8 @@ library(shiny)
 library(shinyjs)
 library(DT)
 library(purrr)
+library(markdown)
+library(knitr)
 source("methods.R")
 source("plots.R")
 
@@ -19,6 +21,10 @@ ui <- tagList(
     navbarPage(
 
     "An Objective Site Selection Framework for Wind Farms from a Sustainable Development Standpoint",
+
+    tabPanel("User guide",
+        uiOutput("user_guide"),
+    ),
 
     tabPanel("Results",
         conditionalPanel(condition = "input.use_research_data == 'Yes'",
@@ -131,6 +137,10 @@ ui <- tagList(
 
 
 server <- function(input,output,session){
+
+    output$user_guide <- renderUI({
+        HTML(markdown::markdownToHTML(knit('www/user_guide.md', quiet = TRUE), fragment.only = TRUE))
+    })
 
     output$table_research <- renderDataTable(
         data_research,
@@ -248,6 +258,8 @@ server <- function(input,output,session){
     observe({
         updateCheckboxGroupInput(session, "input_costs", choices = colnames(data_())[!colnames(data_()) %in% c(input$places_names, input$places_id)])
     })
+
+    output$wip <- renderText("The user guide isn't finished yet.")
 
 }
 

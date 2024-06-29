@@ -20,7 +20,7 @@ create_map_research <- function(data_research, data_scores){
 
     label_txt <- paste(
         "Alternative: ", data_research[, "Municipality"][value_order], "<br/>",
-        "Score: ", data_scores[value_order], "<br/>",
+        "Score: ", sprintf("%.3f", data_scores[value_order]), "<br/>",
         sep = ""
     ) %>% lapply(htmltools::HTML)
 
@@ -79,7 +79,7 @@ create_map <- function(input_data, scores, sf_shapefile, id_name, name_name){
 
     label_txt <- paste(
         "Alternative: ", input_data[, name_name][value_order], "<br/>",
-        "Score: ", scores[value_order], "<br/>",
+        "Score: ", sprintf("%.3f", scores[value_order]), "<br/>",
         sep = ""
     ) %>% lapply(htmltools::HTML)
 
