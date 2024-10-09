@@ -43,8 +43,8 @@ CRITIC <- function(mat, weights){
 }
 
 calculate_scores <- function(num_values, normalization){
-    num_values[, !normalization] <- apply(num_values[, !normalization], 2, min_max)
-    num_values[, normalization] <- apply(num_values[, normalization], 2, reverse_min_max)
+    num_values[, !normalization] <- apply(num_values[, !normalization, drop = FALSE], 2, min_max)
+    num_values[, normalization] <- apply(num_values[, normalization, drop = FALSE], 2, reverse_min_max)
     weights <- MABAC(num_values)
     scores <- CRITIC(num_values, weights)
 
