@@ -186,7 +186,7 @@ server <- function(input,output,session){
         data_cols <- colnames(data_input)
         data_numeric <- !data_cols %in% c(input$places_names, input$places_id)
         data_norm_inputs <- data_cols[data_numeric] %in% as.vector(input$input_costs)
-        data_results <- calculate_scores(data_input[:, data_numeric, drop = FALSE], data_norm_inputs)
+        data_results <- calculate_scores(data_input[, data_numeric, drop = FALSE], data_norm_inputs)
         return(data_results)
     })
 
@@ -259,7 +259,6 @@ server <- function(input,output,session){
         updateCheckboxGroupInput(session, "input_costs", choices = colnames(data_())[!colnames(data_()) %in% c(input$places_names, input$places_id)])
     })
 
-    output$wip <- renderText("The user guide isn't finished yet.")
 
 }
 
